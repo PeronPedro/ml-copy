@@ -35,7 +35,7 @@ ML_SITE = "MLB"
 CLIENT_ID = "2269355868254047"
 CLIENT_SECRET = "yjyEzTZ2HG0HTcM0VIjZOVJXIdGP1PTX"
 
-REDIRECT_URI = "REDIRECT_URI = "https://localhost:8080/callback"
+REDIRECT_URI = "https://ml-copy.onrender.com/callback"
 # =====================================================
 # CÓPIA
 # =====================================================
