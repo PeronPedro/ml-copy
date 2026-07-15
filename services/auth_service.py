@@ -1,67 +1,90 @@
-from flask import Flask, request, jsonify
+# ==========================================
+# ML COPY
+# Serviço de autenticação Mercado Livre
+# ==========================================
+
+import time
+
+from api.mercado_livre import MercadoLivreAPI
+from services.oauth_service import OAuthService
+from services.account_service import AccountService
+
+from config import (
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URI
+)
 
 
-app = Flask(__name__)
+class AuthService:
 
+    def __init__(self):
 
-last_code = None
+        self.api = MercadoLivreAPI()
+        self.oauth = OAuthService()
+        self.account_service = AccountService()
 
+    def open_login(self):
 
+        import webbrowser
+        import urllib.parse
 
-@app.route("/")
-def home():
-
-    return "ML COPY OAuth Server Online"
-
-
-
-@app.route("/callback")
-def callback():
-
-    global last_code
-
-
-    code = request.args.get("code")
-
-
-    if not code:
-
-        return "Nenhum código recebido."
-
-
-    last_code = code
-
-
-    print(
-        "Código recebido:",
-        code
-    )
-
-
-    return """
-    <h2>Conta conectada com sucesso</h2>
-    <p>Pode fechar esta janela.</p>
-    """
-
-
-
-@app.route("/last_code")
-def get_last_code():
-
-    global last_code
-
-
-    return jsonify(
-        {
-            "code": last_code
+        params = {
+            "response_type": "code",
+            "client_id": CLIENT_ID,
+            "redirect_uri": REDIRECT_URI
         }
-    )
 
+        url = (
+            "https://auth.mercadolivre.com.br/authorization?"
+            + urllib.parse.urlencode(params)
+        )
 
+        print(url)
 
-if __name__ == "__main__":
+        webbrowser.open(url)
 
-    app.run(
-        host="0.0.0.0",
-        port=5000
-    )
+    def login_and_save(self):
+
+        print("Aguardando autorização Mercado Livre...")
+
+        code = None
+
+        while code is None:
+
+            code = self.oauth.get_code()
+
+            time.sleep(2)
+
+        print("Código recebido:", code)
+
+        return self.authenticate(code)
+
+    def authenticate(self, authorization_code):
+
+        token = self.api.get_access_token(
+            authorization_code,
+            CLIENT_ID,
+            CLIENT_SECRET,
+            REDIRECT_URI
+        )
+
+        access_token = token["access_token"]
+        refresh_token = token["refresh_token"]
+        expires_in = token["expires_in"]
+
+        user = self.api.get_me(access_token)
+
+        account = {
+            "user_id": user["id"],
+            "nickname": user["nickname"],
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "expires_in": expires_in
+        }
+
+        self.account_service.save_account(account)
+
+        print("CONTA SALVA COM SUCESSO")
+
+        return account

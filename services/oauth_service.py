@@ -4,27 +4,26 @@
 # ==========================================
 
 import requests
+import time
 
 
 class OAuthService:
 
     RENDER_URL = "https://ml-copy.onrender.com"
 
-
     def get_code(self):
 
-        url = f"{self.RENDER_URL}/last_code"
+        while True:
 
+            response = requests.get(
+                f"{self.RENDER_URL}/last_code"
+            )
 
-        response = requests.get(
-            url
-        )
+            response.raise_for_status()
 
+            code = response.json().get("code")
 
-        response.raise_for_status()
+            if code:
+                return code
 
-
-        data = response.json()
-
-
-        return data.get("code")
+            time.sleep(2)
