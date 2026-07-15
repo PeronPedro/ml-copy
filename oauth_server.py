@@ -1,85 +1,40 @@
-# ==========================================
-# ML COPY
-# OAuth Local Mercado Livre
-# ==========================================
-
-from flask import Flask, request
-import threading
-
-from services.auth_service import AuthService
-
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-auth_service = AuthService()
+last_code = None
 
 
 @app.route("/")
 def home():
-
-    return "ML COPY OAuth Local Online"
+    return "ML COPY OAuth Server Online"
 
 
 @app.route("/callback")
 def callback():
+    global last_code
 
     code = request.args.get("code")
 
     if not code:
-
         return "Nenhum código recebido."
 
+    last_code = code
 
-    print("Código recebido:")
-    print(code)
-
-
-    try:
-
-        account = auth_service.authenticate(code)
+    return """
+    <h2>Conta conectada com sucesso</h2>
+    <p>Pode fechar esta janela.</p>
+    """
 
 
-        return f"""
-        <h2>Conta conectada com sucesso!</h2>
+@app.route("/last_code")
+def last_code_route():
+    global last_code
 
-        <p>
-        Usuário:
-        {account["nickname"]}
-        </p>
-
-        <p>
-        Pode fechar esta janela.
-        </p>
-        """
+    return jsonify({
+        "code": last_code
+    })
 
 
-    except Exception as erro:
-
-        print(erro)
-
-
-        return f"""
-        <h2>Erro ao conectar conta</h2>
-
-        <p>{erro}</p>
-        """
-
-
-
-def iniciar_oauth_server():
-
-    thread = threading.Thread(
-
-        target=lambda:
-        app.run(
-            host="127.0.0.1",
-            port=8080,
-            debug=False,
-            use_reloader=False
-        ),
-
-        daemon=True
-
-    )
-
-    thread.start()
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
