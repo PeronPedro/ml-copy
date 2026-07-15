@@ -8,12 +8,13 @@ from database import get_connection
 
 class AccountService:
 
-    # =====================================================
 
     def save_account(self, account):
 
-        connection = get_connection()
-        cursor = connection.cursor()
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
 
         cursor.execute(
             """
@@ -23,165 +24,91 @@ class AccountService:
                 nickname,
                 access_token,
                 refresh_token,
-                expires_in
+                expires_in,
+                role
             )
-            VALUES
-            (
-                ?,
-                ?,
-                ?,
-                ?,
-                ?
-            )
-
-            ON CONFLICT(user_id)
-            DO UPDATE SET
-
-                nickname = excluded.nickname,
-                access_token = excluded.access_token,
-                refresh_token = excluded.refresh_token,
-                expires_in = excluded.expires_in
-
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
                 account["user_id"],
                 account["nickname"],
                 account["access_token"],
                 account["refresh_token"],
-                account["expires_in"]
+                account["expires_in"],
+                "donor"
             )
         )
 
-        connection.commit()
-        connection.close()
 
-    # =====================================================
+        conn.commit()
+
+        conn.close()
+
+
 
     def get_accounts(self):
 
-        connection = get_connection()
+        conn = get_connection()
 
-        cursor = connection.cursor()
+        cursor = conn.cursor()
 
-        cursor.execute(
-            """
-            SELECT *
-
-            FROM accounts
-
-            ORDER BY nickname
-            """
-        )
-
-        accounts = cursor.fetchall()
-
-        connection.close()
-
-        return accounts
-
-    # =====================================================
-
-    def get_account_by_user_id(self, user_id):
-
-        connection = get_connection()
-
-        cursor = connection.cursor()
 
         cursor.execute(
             """
             SELECT *
-
             FROM accounts
-
-            WHERE user_id = ?
-            """,
-            (user_id,)
-        )
-
-        account = cursor.fetchone()
-
-        connection.close()
-
-        return account
-
-    # =====================================================
-    # CONTA DOADORA
-    # =====================================================
-
-    def set_donor(self, user_id):
-
-        connection = get_connection()
-
-        cursor = connection.cursor()
-
-        cursor.execute(
-            """
-            UPDATE accounts
-            SET role='DESTINATION'
             """
         )
 
-        cursor.execute(
-            """
-            UPDATE accounts
-            SET role='DONOR'
-            WHERE user_id=?
-            """,
-            (user_id,)
-        )
 
-        connection.commit()
+        rows = cursor.fetchall()
 
-        connection.close()
+        conn.close()
 
-    # =====================================================
+
+        return rows
+
+
 
     def get_donor(self):
 
-        connection = get_connection()
+        conn = get_connection()
 
-        cursor = connection.cursor()
+        cursor = conn.cursor()
+
 
         cursor.execute(
             """
             SELECT *
-
             FROM accounts
-
-            WHERE role='DONOR'
-
+            WHERE role='donor'
             LIMIT 1
             """
         )
 
-        account = cursor.fetchone()
 
-        connection.close()
+        row = cursor.fetchone()
 
-        return account
+        conn.close()
 
-    # =====================================================
 
-    def get_destinations(self):
+        if not row:
 
-        connection = get_connection()
+            return None
 
-        cursor = connection.cursor()
 
-        cursor.execute(
-            """
-            SELECT *
+        return {
 
-            FROM accounts
+            "id": row[0],
 
-            WHERE role='DESTINATION'
+            "user_id": row[1],
 
-            ORDER BY nickname
-            """
-        )
+            "nickname": row[2],
 
-        accounts = cursor.fetchall()
+            "access_token": row[3],
 
-        connection.close()
+            "refresh_token": row[4],
 
-        return accounts
+            "expires_in": row[5]
+
+        }

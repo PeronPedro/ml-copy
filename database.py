@@ -1,6 +1,6 @@
 # ==========================================
 # ML COPY
-# Banco de Dados SQLite
+# Banco de dados SQLite
 # ==========================================
 
 import sqlite3
@@ -9,25 +9,30 @@ import os
 from config import DATABASE_FILE
 
 
+
 def get_connection():
 
-    folder = os.path.dirname(DATABASE_FILE)
+    pasta = os.path.dirname(DATABASE_FILE)
 
-    if folder and not os.path.exists(folder):
-        os.makedirs(folder)
+    if pasta and not os.path.exists(pasta):
 
-    connection = sqlite3.connect(DATABASE_FILE)
+        os.makedirs(pasta)
 
-    connection.row_factory = sqlite3.Row
 
-    return connection
+    conn = sqlite3.connect(
+        DATABASE_FILE
+    )
+
+    return conn
+
 
 
 def initialize_database():
 
-    connection = get_connection()
+    conn = get_connection()
 
-    cursor = connection.cursor()
+    cursor = conn.cursor()
+
 
     cursor.execute(
         """
@@ -36,9 +41,9 @@ def initialize_database():
 
             id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-            user_id INTEGER UNIQUE NOT NULL,
+            user_id TEXT,
 
-            nickname TEXT NOT NULL,
+            nickname TEXT,
 
             access_token TEXT,
 
@@ -46,14 +51,13 @@ def initialize_database():
 
             expires_in INTEGER,
 
-            role TEXT DEFAULT 'DESTINATION',
-
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            role TEXT DEFAULT 'donor'
 
         )
         """
     )
 
-    connection.commit()
 
-    connection.close()
+    conn.commit()
+
+    conn.close()
