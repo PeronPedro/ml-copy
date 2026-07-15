@@ -18,6 +18,7 @@ from database import initialize_database
 
 from ui.dashboard import DashboardView
 from ui.accounts import AccountsView
+from ui.advertisements import AdvertisementsView
 
 
 class App(ctk.CTk):
@@ -84,7 +85,8 @@ class App(ctk.CTk):
 
         ctk.CTkButton(
             self.sidebar,
-            text="📦 Anúncios"
+            text="📦 Anúncios",
+            command=self.show_advertisements
         ).pack(fill="x", padx=15, pady=5)
 
         ctk.CTkButton(
@@ -159,4 +161,21 @@ class App(ctk.CTk):
 
         self.status.configure(
             text="Gerenciador de Contas"
+        )
+
+    # ==================================================
+
+    def show_advertisements(self):
+
+        self.clear_view()
+
+        self.current_view = AdvertisementsView(self.main)
+
+        self.current_view.pack(
+            fill="both",
+            expand=True
+        )
+
+        self.status.configure(
+            text="Anúncios"
         )

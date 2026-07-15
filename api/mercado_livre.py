@@ -8,9 +8,7 @@ import requests
 
 class MercadoLivreAPI:
 
-
     BASE_URL = "https://api.mercadolibre.com"
-
 
 
     def get_access_token(
@@ -27,9 +25,13 @@ class MercadoLivreAPI:
         data = {
 
             "grant_type": "authorization_code",
+
             "client_id": client_id,
+
             "client_secret": client_secret,
+
             "code": authorization_code,
+
             "redirect_uri": redirect_uri
 
         }
@@ -47,7 +49,6 @@ class MercadoLivreAPI:
         return response.json()
 
 
-
     def refresh_token(
         self,
         refresh_token,
@@ -61,8 +62,11 @@ class MercadoLivreAPI:
         data = {
 
             "grant_type": "refresh_token",
+
             "client_id": client_id,
+
             "client_secret": client_secret,
+
             "refresh_token": refresh_token
 
         }
@@ -78,7 +82,6 @@ class MercadoLivreAPI:
 
 
         return response.json()
-
 
 
     def get_me(
